@@ -57,4 +57,4 @@ print('Balanced Accuracy: %.3f (%.3f)' % (np.mean(n_scores), np.std(n_scores)))
 
 #write score to a file
 with open("metrics.txt", 'w') as outfile:
-  outfile.write('Balanced Accuracy: %.3f (%.3f)' % (np.mean(n_scores), np.std(n_scores)))
+        outfile.write('Balanced Accuracy: %.3f (%.3f)' % (np.mean(n_scores), np.std(n_scores)))

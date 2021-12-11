@@ -25,7 +25,10 @@ jobs:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Post reports as comments in GitHub PRs
-          echo "Model Metrics"
-          cat metrics.txt
+          echo "Model Metrics" > report.md
           cat metrics.txt >> report.md
+          echo "Visualizations" >> report.md
+          cml-publish feature_importance.png >> report.md
+          cml-publish confusion_matrix.png >> report.md
+          
           cml-send-comment report.md

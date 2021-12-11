@@ -11,6 +11,9 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import RandomForestClassifier
 from sklearn import metrics
 import json
+from sklearn.inspection import permutation_importance
+from sklearn import svm
+from sklearn.model_selection import GridSearchCV
 
 ################################################
 #train a random forest model as a baseline model
@@ -20,8 +23,8 @@ df = pd.read_csv('processed_data.csv')
 df_x = df.drop('Label', axis=1)
 y = df['Label']
 
-#create rf model
-clf = RandomForestClassifier(max_depth=10, n_estimators=50, random_state=0)
+#create svm model
+clf = svm.SVC()
 cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=5, random_state=1)
 n_scores = cross_val_score(clf, df_x, y, scoring='balanced_accuracy', cv=cv, n_jobs=-1, error_score='raise')
 
@@ -39,15 +42,21 @@ print('Balanced Accuracy: %.3f (%.3f)' % (np.mean(n_scores), np.std(n_scores)))
 le = LabelEncoder()
 y = le.fit_transform(y)
 
-#split the dataset into train and test set and train a random forest classifier on the train set. 
+#split the dataset into train and test set and tdo a grid search to tune the SVM hyperparameters. 
 X_train, X_test, y_train, y_test = train_test_split(df_x, y, test_size = 0.2, random_state = 42)
-clf2 = RandomForestClassifier(max_depth=10, random_state=0)
-clf2.fit(X_train, y_train)
-y_pred = clf2.predict(X_test)
-print("Balanced Accuracy:",metrics.balanced_accuracy_score(y_test, y_pred))
+
+# defining parameter range
+param_grid = {'C': [0.1, 1, 10, 100, 1000],
+              'gamma': [1, 0.1, 0.01, 0.001, 0.0001],
+              'kernel': ['rbf']}
+
+grid = GridSearchCV(svm.SVC(), param_grid, refit = True, verbose = 3)
+grid.fit(X_train, y_train)
+grid_predictions = grid.predict(X_test)
+print("Accuracy:",metrics.balanced_accuracy_score(y_test, grid_predictions))
 
 #calculate sensitivity and specificity for multi-class classification
-cnf_matrix = metrics.confusion_matrix(y_test, y_pred)
+cnf_matrix = metrics.confusion_matrix(y_test, grid_predictions)
 FP = cnf_matrix.sum(axis=0) - np.diag(cnf_matrix) 
 FN = cnf_matrix.sum(axis=1) - np.diag(cnf_matrix)
 TP = np.diag(cnf_matrix)
@@ -75,19 +84,21 @@ ACC = (TP+TN)/(TP+FP+FN+TN)
 
 #write score to a file
 with open("metrics.json", 'w') as outfile:
-        json.dump({"Balanced Accuracy (mean recall)":metrics.balanced_accuracy_score(y_test, y_pred), "Specificity":np.mean(TNR)}, outfile)
+        json.dump({"Balanced Accuracy (mean recall)":metrics.balanced_accuracy_score(y_test, grid_predictions), "Specificity":np.mean(TNR)}, outfile)
 
 #plot the most important features for the model
+perm_importance = permutation_importance(grid, X_test, y_test)
 feature_names = X_train.columns
-plt.figure(figsize=(8, 12), dpi=120)
-sorted_idx = clf2.feature_importances_.argsort()
-plt.barh(feature_names[sorted_idx], clf2.feature_importances_[sorted_idx])
+features = np.array(feature_names)
+sorted_idx = perm_importance.importances_mean.argsort()
+plt.figure(figsize=(8, 12), dpi=80)
+plt.barh(features[sorted_idx], perm_importance.importances_mean[sorted_idx])
 plt.tight_layout()
 plt.savefig("feature_importance.png",dpi=120) 
 plt.close()
 
 #plot confusion matrix
-c_mat = pd.DataFrame(data=np.column_stack((le.inverse_transform(y_test),le.inverse_transform(y_pred))), columns=['y_Actual','y_Predicted'])
+c_mat = pd.DataFrame(data=np.column_stack((le.inverse_transform(y_test),le.inverse_transform(grid_predictions))), columns=['y_Actual','y_Predicted'])
 confusion_matrix = pd.crosstab(c_mat['y_Actual'], c_mat['y_Predicted'], rownames=['Actual'], colnames=['Predicted'])
 sns.heatmap(confusion_matrix, annot=True, cmap='Blues')
 plt.tight_layout()

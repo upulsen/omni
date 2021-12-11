@@ -58,3 +58,37 @@ print('Balanced Accuracy: %.3f (%.3f)' % (np.mean(n_scores), np.std(n_scores)))
 #write score to a file
 with open("metrics.txt", 'w') as outfile:
         outfile.write('Balanced Accuracy: %.3f (%.3f)' % (np.mean(n_scores), np.std(n_scores)))
+
+########################################
+#feature importance and confusion matrix
+########################################
+#use label encoder to convert the categorical labels into numerical ones
+le = LabelEncoder()
+y = le.fit_transform(y)
+
+#split the dataset into train and test set and train a random forest classifier on the train set. 
+X_train, X_test, y_train, y_test = train_test_split(df_x, y, test_size = 0.2, random_state = 42)
+clf2 = RandomForestClassifier(max_depth=10, random_state=0)
+clf2.fit(X_train, y_train)
+y_pred = clf2.predict(X_test)
+print("Accuracy:",metrics.balanced_accuracy_score(y_test, y_pred))
+
+#write score to a file
+with open("metrics.txt", 'a') as outfile:
+        outfile.write('\nBalanced Accuracy for train/test split: %.3f' % metrics.balanced_accuracy_score(y_test, y_pred))
+
+#plot the most important features for the model
+feature_names = X_train.columns
+plt.figure(figsize=(8, 12), dpi=120)
+sorted_idx = clf2.feature_importances_.argsort()
+plt.barh(feature_names[sorted_idx], clf2.feature_importances_[sorted_idx])
+plt.tight_layout()
+plt.savefig("feature_importance.png",dpi=120) 
+plt.close()
+
+#plot confusion matrix
+c_mat = pd.DataFrame(data=np.column_stack((le.inverse_transform(y_test),le.inverse_transform(y_pred))), columns=['y_Actual','y_Predicted'])
+confusion_matrix = pd.crosstab(c_mat['y_Actual'], c_mat['y_Predicted'], rownames=['Actual'], colnames=['Predicted'])
+sns.heatmap(confusion_matrix, annot=True, cmap='Blues')
+plt.tight_layout()
+plt.savefig("confusion_matrix.png",dpi=120)

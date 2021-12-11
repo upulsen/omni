@@ -25,7 +25,7 @@ jobs:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git fetch --prune
-          dvc metrics diff --show-md 4889654e555f2c73d5e7de5fc94565ff50b718dd > report.md
+          dvc metrics diff --show-md main > report.md
 
           echo "\nVisualizations" >> report.md
           cml-publish feature_importance.png --md >> report.md

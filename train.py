@@ -75,7 +75,7 @@ print("Accuracy:",metrics.balanced_accuracy_score(y_test, y_pred))
 
 #write score to a file
 with open("metrics.txt", 'a') as outfile:
-        outfile.write('Balanced Accuracy for train/test split: %.3f' % metrics.balanced_accuracy_score(y_test, y_pred))
+        outfile.write('\nBalanced Accuracy for train/test split: %.3f' % metrics.balanced_accuracy_score(y_test, y_pred))
 
 #plot the most important features for the model
 feature_names = X_train.columns

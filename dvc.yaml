@@ -1,0 +1,19 @@
+stages:
+  transform:
+    cmd: python transform.py
+    deps:
+    - transform.py
+    - o8t_testdata.csv
+    outs:
+    - processed_data.csv
+  train:
+    cmd: python train.py
+    deps:
+    - train.py
+    - processed_data.csv
+    outs:
+    - feature_importance.png
+    - confusion_matrix.png
+    metrics:
+    - metrics.json:
+        cache: false

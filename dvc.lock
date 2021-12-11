@@ -1,0 +1,34 @@
+schema: '2.0'
+stages:
+  transform:
+    cmd: python transform.py
+    deps:
+    - path: o8t_testdata.csv
+      md5: 1f6df839e9eb4ed59a46cab10ba40f62
+      size: 31284
+    - path: transform.py
+      md5: 5888b98c17d976d594023b3d834e166d
+      size: 1991
+    outs:
+    - path: processed_data.csv
+      md5: 4ff549cb142f271d824e9b19c9df34b1
+      size: 39245
+  train:
+    cmd: python train.py
+    deps:
+    - path: processed_data.csv
+      md5: 4ff549cb142f271d824e9b19c9df34b1
+      size: 39245
+    - path: train.py
+      md5: 3f54081cefe0ccfd5f27e3335ac2269e
+      size: 3682
+    outs:
+    - path: confusion_matrix.png
+      md5: 4fb23fa2a2ae9583df6dca593a639231
+      size: 23000
+    - path: feature_importance.png
+      md5: 6e3c5f0619d2f40387a5233e1b8cec1b
+      size: 161500
+    - path: metrics.json
+      md5: a4a7eb70833240ccd5fd580365d4f23c
+      size: 188

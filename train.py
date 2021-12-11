@@ -58,3 +58,22 @@ print('Balanced Accuracy: %.3f (%.3f)' % (np.mean(n_scores), np.std(n_scores)))
 #write score to a file
 with open("metrics.txt", 'w') as outfile:
         outfile.write('Balanced Accuracy: %.3f (%.3f)' % (np.mean(n_scores), np.std(n_scores)))
+
+########################################
+#feature importance and confusion matrix
+########################################
+#plot the most important features for the model
+feature_names = X_train.columns
+plt.figure(figsize=(8, 12), dpi=120)
+sorted_idx = clf2.feature_importances_.argsort()
+plt.barh(feature_names[sorted_idx], clf2.feature_importances_[sorted_idx])
+plt.tight_layout()
+plt.savefig("feature_importance.png",dpi=120) 
+plt.close()
+
+#plot confusion matrix
+c_mat = pd.DataFrame(data=np.column_stack((le.inverse_transform(y_test),le.inverse_transform(y_pred))), columns=['y_Actual','y_Predicted'])
+confusion_matrix = pd.crosstab(c_mat['y_Actual'], c_mat['y_Predicted'], rownames=['Actual'], colnames=['Predicted'])
+sns.heatmap(confusion_matrix, annot=True, cmap='Blues')
+plt.tight_layout()
+plt.savefig("confusion_matrix.png",dpi=120)

@@ -29,8 +29,8 @@ n_scores = cross_val_score(clf, df_x, y, scoring='balanced_accuracy', cv=cv, n_j
 print('Balanced Accuracy: %.3f (%.3f)' % (np.mean(n_scores), np.std(n_scores)))
 
 #write score to a file
-with open("metrics.json", 'w') as outfile:
-        json.dump({"Balanced Accuracy (mean recall)":np.mean(n_scores), "Standard Deviation":np.std(n_scores)}, outfile)
+#with open("metrics.json", 'w') as outfile:
+#        json.dump({"Balanced Accuracy (mean recall)":np.mean(n_scores), "Standard Deviation":np.std(n_scores)}, outfile)
 
 ########################################
 #feature importance and confusion matrix
@@ -74,7 +74,7 @@ FDR = FP/(TP+FP)
 ACC = (TP+TN)/(TP+FP+FN+TN)
 
 #write score to a file
-with open("metrics.json", 'a') as outfile:
+with open("metrics.json", 'w') as outfile:
         json.dump({"Balanced Accuracy (mean recall)":metrics.balanced_accuracy_score(y_test, y_pred), "Specificity":np.mean(TNR)}, outfile)
 
 #plot the most important features for the model

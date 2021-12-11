@@ -62,6 +62,21 @@ with open("metrics.txt", 'w') as outfile:
 ########################################
 #feature importance and confusion matrix
 ########################################
+#use label encoder to convert the categorical labels into numerical ones
+le = LabelEncoder()
+y = le.fit_transform(y)
+
+#split the dataset into train and test set and train a random forest classifier on the train set. 
+X_train, X_test, y_train, y_test = train_test_split(df_x, y, test_size = 0.2, random_state = 42)
+clf2 = RandomForestClassifier(max_depth=10, random_state=0)
+clf2.fit(X_train, y_train)
+y_pred = clf2.predict(X_test)
+print("Accuracy:",metrics.balanced_accuracy_score(y_test, y_pred))
+
+#write score to a file
+with open("metrics.txt", 'a') as outfile:
+        outfile.write('Balanced Accuracy for train/test split: %.3f' % metrics.balanced_accuracy_score(y_test, y_pred))
+
 #plot the most important features for the model
 feature_names = X_train.columns
 plt.figure(figsize=(8, 12), dpi=120)
